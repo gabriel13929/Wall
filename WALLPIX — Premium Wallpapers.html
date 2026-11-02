@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WALLPIX — Seu estilo. Sua tela. Seu universo.</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#05050A',
+                        cardbg: '#0C0C14',
+                        cardhover: '#141422',
+                        neonpurple: '#9333EA',
+                        neonglow: '#A855F7',
+                        electricblue: '#3B82F6',
+                        cyanblue: '#06B6D4'
+                    },
+                    boxShadow: {
+                        'neon': '0 0 25px -5px rgba(147, 51, 234, 0.4)',
+                        'neon-blue': '0 0 25px -5px rgba(59, 130, 246, 0.4)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Google Fonts Inter -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #05050A;
+            color: #F8FAFC;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(12, 12, 20, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(168, 85, 247, 0.15);
+        }
+        .glass-card {
+            background: rgba(18, 18, 30, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .neon-border {
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            box-shadow: 0 0 15px rgba(147, 51, 234, 0.2);
+        }
+        .neon-border:focus {
+            border-color: #A855F7;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+            outline: none;
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #A855F7 0%, #3B82F6 50%, #06B6D4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-neon {
+            background: linear-gradient(135deg, #9333EA 0%, #3B82F6 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
+        }
+        .btn-neon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.7);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #05050A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1E1E30;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9333EA;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-purple-600 selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Custom Modal Container -->
+    <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-all duration-300"></div>
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-purple-900/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="router.navigate('home')">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center shadow-neon">
+                    <i class="fa-solid fa-wand-magic-sparkles text-white text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-2xl font-black tracking-wider text-gradient">WALLPIX</span>
+                    <span class="block text-[10px] uppercase tracking-widest text-purple-400 font-semibold -mt-1">Premium Universe</span>
+                </div>
+            </div>
+
+            <!-- Desktop Navigation Links -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <a href="#" onclick="router.navigate('home')" class="text-slate-300 hover:text-purple-400 transition-colors">Início</a>
+                <a href="#" onclick="router.navigate('catalog')" class="text-slate-300 hover:text-purple-400 transition-colors">Catálogo</a>
+                <a href="#" onclick="router.navigate('bundles')" class="text-slate-300 hover:text-purple-400 transition-colors">Pacotes & Ofertas</a>
+                <a href="#" onclick="router.navigate('community')" class="text-slate-300 hover:text-purple-400 transition-colors">Comunidade</a>
+            </nav>
+
+            <!-- Right Action Buttons -->
+            <div class="flex items-center gap-4">
+                <button onclick="router.navigate('catalog')" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-300 hover:text-white hover:border-purple-500/50 transition-all">
+                    <i class="fa-solid fa-search text-purple-400"></i>
+                    <span class="text-sm">Buscar...</span>
+                </button>
+
+                <!-- Auth / User Profile Area -->
+                <div id="auth-nav-container" class="flex items-center gap-3">
+                    <!-- Injected dynamically via JS depending on login status -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Viewport -->
+    <main id="app-main" class="flex-grow">
+        <!-- Views rendered dynamically -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-panel border-t border-purple-900/20 py-12 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-purple-600 flex items-center justify-center text-white">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <span class="text-xl font-bold text-gradient">WALLPIX</span>
+                </div>
+                <p class="text-slate-400 text-sm">Seu estilo. Sua tela. Seu universo. Wallpapers estáticos, animados e 3D em altíssima definição para todas as suas telas.</p>
+                <div class="text-xs text-slate-500">© 2026 WALLPIX Inc. Todos os direitos reservados.</div>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Categorias Populares</h4>
+                <ul class="space-y-2 text-sm text-slate-400">
+                    <li><a href="#" onclick="router.navigate('catalog', {cat: 'Anime'})" class="hover:text-purple-400">Anime</a></li>
+                    <li><a href="#" onclick="router.navigate('catalog', {cat: 'Carros'})" class="hover:text-purple-400">Carros & Supercars</a></li>
+                    <li><a href="#" onclick="router.navigate('catalog', {cat: 'Games'})" class="hover:text-purple-400">Jogos & GTA</a></li>
+                    <li><a href="#" onclick="router.navigate('catalog', {cat: 'Espaço'})" class="hover:text-purple-400">Espaço & Astronomia</a></li>
+                    <li><a href="#" onclick="router.navigate('catalog', {cat: 'Minimalistas'})" class="hover:text-purple-400">Minimalistas</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Plataforma</h4>
+                <ul class="space-y-2 text-sm text-slate-400">
+                    <li><a href="#" onclick="router.navigate('home')" class="hover:text-purple-400">Página Inicial</a></li>
+                    <li><a href="#" onclick="router.navigate('catalog')" class="hover:text-purple-400">Catálogo Completo</a></li>
+                    <li><a href="#" onclick="router.navigate('bundles')" class="hover:text-purple-400">Pacotes Promocionais</a></li>
+                    <li><a href="#" onclick="openAuthModal('login')" class="hover:text-purple-400">Área do Cliente</a></li>
+                    <li><a href="#" onclick="openAdminLoginModal()" class="text-purple-400 hover:text-purple-300 font-medium">Painel BielShadow</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Newsletter VIP</h4>
+                <p class="text-slate-400 text-sm mb-4">Receba wallpapers exclusivos grátis toda semana no seu e-mail.</p>
+                <form onsubmit="event.preventDefault(); showToast('Inscrição realizada com sucesso! Verifique seu e-mail.', 'success'); this.reset();" class="flex gap-2">
+                    <input type="email" required placeholder="Seu e-mail..." class="bg-black/50 border border-purple-500/30 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 w-full">
+                    <button type="submit" class="btn-neon px-4 py-2.5 rounded-xl text-white font-medium text-sm whitespace-nowrap">Assinar</button>
+                </form>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Core -->
+    <script>
+        // --- GLOBAL APP STATE & SUPABASE INIT ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'wallpix-app-v1';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        
+        // Supabase configuration credentials (fallback local simulation if offline/not configured)
+        const SUPABASE_URL = localStorage.getItem('wallpix_sb_url') || 'https://placeholder.supabase.co';
+        const SUPABASE_KEY = localStorage.getItem('wallpix_sb_key') || 'placeholder-key';
+        let supabaseClient = null;
+        try {
+            if (window.supabase && SUPABASE_URL !== 'https://placeholder.supabase.co') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            }
+        } catch(e) { console.warn('Supabase initialization warning:', e); }
+
+        // Initial Seed Mock Wallpapers with 13 required categories
+        const INITIAL_WALLPAPERS = [
+            {
+                id: 'wp-1',
+                title: 'Cyberpunk Neon City 2077',
+                category: 'Games',
+                type: 'animated',
+                price: 0, // Free
+                resolution: '4K Ultra HD (3840x2160)',
+                downloads: 4280,
+                rating: 4.9,
+                image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop',
+                previewVideo: 'https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-and-numbers-31908-large.mp4',
+                featured: true,
+                badge: 'Gratuito',
+                description: 'Wallpaper animado futurista em alta resolução com efeitos neon vibrantes inspirados em cyberpunk e jogos de mundo aberto.'
+            },
+            {
+                id: 'wp-2',
+                title: 'Nissan Skyline GT-R R34 Midnight',
+                category: 'Carros',
+                type: 'static',
+                price: 14.90,
+                resolution: '8K Master (7680x4320)',
+                downloads: 1940,
+                rating: 5.0,
+                image: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=80&w=1200&auto=format&fit=crop',
+                featured: true,
+                badge: 'Bestseller',
+                description: 'O lendário Nissan Skyline GT-R em uma noite chuvosa de Tóquio. Detalhes hiper-realistas para entusiastas automotivos.'
+            },
+            {
+                id: 'wp-3',
+                title: 'Goku Ultra Instinct Awakening',
+                category: 'Anime',
+                type: 'animated',
+                price: 9.90,
+                resolution: '4K Ultra HD (3840x2160)',
+                downloads: 3510,
+                rating: 4.95,
+                image: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1200&auto=format&fit=crop',
+                featured: true,
+                badge: 'Popular',
+                description: 'Aura prateada divina em animação fluida de altíssima qualidade para fãs de Dragon Ball Super.'
+            },
+            {
+                id: 'wp-4',
+                title: 'Interstellar Nebula Deep Space',
+                category: 'Espaço',
+                type: 'static',
+                price: 0,
+                resolution: '8K Master (7680x4320)',
+                downloads: 5120,
+                rating: 4.88,
+                image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop',
+                featured: true,
+                badge: 'Gratuito',
+                description: 'Nebulosa cósmica deslumbrante capturada pelo telescópio espacial James Webb, ideal para dual-monitors.'
+            },
+            {
+                id: 'wp-5',
+                title: 'Minecraft Shaders Epic Sunset',
+                category: 'Minecraft',
+                type: 'static',
+                price: 4.90,
+                resolution: '4K Ultra HD (3840x2160)',
+                downloads: 1240,
+                rating: 4.75,
+                image: 'https://images.unsplash.com/photo-1627856013091-fed6e4e3002f?q=80&w=1200&auto=format&fit=crop',
+                featured: false,
+                badge: 'Destaque',
+                description: 'Paisagem cúbica renderizada com RTX on e shaders ultrarrealistas ao pôr do sol.'
+            },
+            {
+                id: 'wp-6',
+                title: 'GTA VI Vice City Sunset Vibes',
+                category: 'GTA',
+                type: 'animated',
+                price: 19.90,
+                resolution: '4K Ultra HD (3840x2160)',
+                downloads: 4890,
+                rating: 4.98,
+                image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop',
+                featured: true,
+                badge: 'Hot',
+                description: 'A atmosfera vibrante de Vice City com palmeiras, luzes neon e o pôr do sol icônico.'
+            },
+            {
+                id: 'wp-7',
+                title: 'Cybernetic Samurai 3D',
+                category: '3D',
+                type: 'animated',
+                price: 12.90,
+                resolution: '4K 60FPS (3840x2160)',
+                downloads: 2310,
+                rating: 4.91,
+                image: 'https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=1200&auto=format&fit=crop',
+                featured: false,
+                badge: '3D Pro',
+                description: 'Samurai cibernético modelado em 3D com armadura interativa e katana brilhante.'
+            },
+            {
+                id: 'wp-8',
+                title: 'Minimalist Tokyo Neon Rain',
+                category: 'Minimalistas',
+                type: 'static',
+                price: 0,
+                resolution: '4K Ultra HD (3840x2160)',
+                downloads: 6200,
+                rating: 4.94,
+                image: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=1200&auto=format&fit=crop',
+                featured: true,
+                badge: 'Gratuito',
+                description: 'Estética minimalista clean com tons escuros e reflexos de chuva na calçada de Tóquio.'
+            },
+            {
+                id: 'wp-9',
+                title: 'Ducati Panigale V4 R Track',
+                category: 'Motos',
+                type: 'static',
+                price: 7.90,
+                resolution: '4K Ultra HD (3840x2160)',
+                downloads: 980,
+                rating: 4.82,
+                image: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=1200&auto=format&fit=crop',
+                featured: false,
+                badge: 'Novo',
+                description: 'Superbike italiana em curva fechada no asfalto com inclinação máxima.'
+            },
+            {
+                id: 'wp-10',
+                title: 'Quantum Tech Circuit Core',
+                category: 'Tecnologia',
+                type: 'animated',
+                price: 0,
+                resolution: '4K Ultra HD (3840x2160)',
+                downloads: 3410,
+                rating: 4.86,
+                image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
+                featured: false,
+                badge: 'Gratuito',
+                description: 'Fluxos de dados quânticos e microprocessador em funcionamento com luzes azuis e roxas.'
+            },
+            {
+                id: 'wp-11',
+                title: 'Nordic Aurora Borealis Mountains',
+                category: 'Paisagens',
+                type: 'static',
+                price: 0,
+                resolution: '8K Master (7680x4320)',
+                downloads: 7120,
+                rating: 4.99,
+                image: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?q=80&w=1200&auto=format&fit=crop',
+                featured: true,
+                badge: 'Gratuito',
+                description: 'Aurora boreal espetacular iluminando picos nevados na Noruega.'
+            },
+            {
+                id: 'wp-12',
+                title: 'Neon Cyber Portrait Model',
+                category: 'Pessoas',
+                type: 'static',
+                price: 8.50,
+                resolution: '4K Ultra HD (3840x2160)',
+                downloads: 1650,
+                rating: 4.81,
+                image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1200&auto=format&fit=crop',
+                featured: false,
+                badge: 'Estúdio',
+                description: 'Retrato artístico com iluminação dual-tone em neon roxo e azul elétrico.'
+            }
+        ];
+
+        // Categories List (13 required categories)
+        const CATEGORIES_LIST = [
+            'Carros', 'Pessoas', 'Anime', 'Games', 'Minecraft', 'GTA', 
+            'Paisagens', 'Espaço', 'Tecnologia', 'Motos', 'Minimalistas', '3D', 'Animated'
+        ];
+
+        // Initial App Data Stored in LocalStorage / State
+        const AppData = {
+            currentUser: JSON.parse(localStorage.getItem('wallpix_current_user')) || null,
+            wallpapers: JSON.parse(localStorage.getItem('wallpix_wallpapers')) || INITIAL_WALLPAPERS,
+            categories: JSON.parse(localStorage.getItem('wallpix_categories')) || CATEGORIES_LIST,
+            bundles: JSON.parse(localStorage.getItem('wallpix_bundles')) || [
+                { id: 'b-1', title: 'Pack Gamer Ultra 4K', items: 10, price: 29.90, originalPrice: 69.90, image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=800&auto=format&fit=crop', desc: 'Os 10 melhores wallpapers de jogos e cyberpunk.' },
+                { id: 'b-2', title: 'Pack Supercars & JDM', items: 15, price: 34.90, originalPrice: 99.90, image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop', desc: 'Coleção completa de carros tunados e esportivos.' },
+                { id: 'b-3', title: 'Pack Anime Legends', items: 20, price: 39.90, originalPrice: 119.90, image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop', desc: 'Os heróis de anime mais épicos em resolução 4K.' }
+            ],
+            coupons: JSON.parse(localStorage.getItem('wallpix_coupons')) || [
+                { code: 'WALLPIX10', discount: 10 },
+                { code: 'BIELSHADOW20', discount: 20 },
+                { code: 'VIP50', discount: 50 }
+            ],
+            siteLayout: JSON.parse(localStorage.getItem('wallpix_layout')) || {
+                heroTitle: 'Seu estilo. Sua tela. Seu universo.',
+                heroSubtitle: 'Explore a maior coleção de wallpapers estáticos, animados e 3D em altíssima definição para PC e Celular.',
+                heroBanner: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1600&auto=format&fit=crop',
+                gridColumns: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+                sectionsOrder: ['hero', 'categories', 'featured', 'bundles', 'stats', 'community']
+            }
+        };
+
+        function saveAppData() {
+            localStorage.setItem('wallpix_wallpapers', JSON.stringify(AppData.wallpapers));
+            localStorage.setItem('wallpix_categories', JSON.stringify(AppData.categories));
+            localStorage.setItem('wallpix_bundles', JSON.stringify(AppData.bundles));
+            localStorage.setItem('wallpix_coupons', JSON.stringify(AppData.coupons));
+            localStorage.setItem('wallpix_layout', JSON.stringify(AppData.siteLayout));
+            if (AppData.currentUser) {
+                localStorage.setItem('wallpix_current_user', JSON.stringify(AppData.currentUser));
+            } else {
+                localStorage.removeItem('wallpix_current_user');
+            }
+        }
+
+        // --- ROUTER & VIEW MANAGEMENT ---
+        const router = {
+            currentView: 'home',
+            params: {},
+            navigate(viewName, params = {}) {
+                this.currentView = viewName;
+                this.params = params;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                renderApp();
+            }
+        };
+
+        function renderApp() {
+            renderHeaderAuth();
+            const main = document.getElementById('app-main');
+            main.innerHTML = '';
+
+            switch(router.currentView) {
+                case 'home':
+                    main.innerHTML = renderHomeView();
+                    break;
+                case 'catalog':
+                    main.innerHTML = renderCatalogView(router.params);
+                    break;
+                case 'detail':
+                    main.innerHTML = renderDetailView(router.params.id);
+                    break;
+                case 'bundles':
+                    main.innerHTML = renderBundlesView();
+                    break;
+                case 'community':
+                    main.innerHTML = renderCommunityView();
+                    break;
+                case 'profile':
+                    if (!AppData.currentUser) {
+                        router.navigate('home');
+                        openAuthModal('login');
+                        return;
+                    }
+                    main.innerHTML = renderProfileView(router.params.tab || 'favorites');
+                    break;
+                case 'admin':
+                    if (!AppData.currentUser || AppData.currentUser.role !== 'admin') {
+                        router.navigate('home');
+                        showToast('Acesso negado. Apenas o administrador BielShadow.', 'error');
+                        return;
+                    }
+                    main.innerHTML = renderAdminDashboardView();
+                    break;
+                default:
+                    main.innerHTML = renderHomeView();
+            }
+            
+            // Re-initialize dynamic interactivity if needed
+            attachDynamicListeners();
+        }
+
+        function renderHeaderAuth() {
+            const container = document.getElementById('auth-nav-container');
+            if (!container) return;
+
+            if (!AppData.currentUser) {
+                container.innerHTML = `
+                    <button onclick="openAuthModal('login')" class="px-4 py-2 rounded-xl text-slate-300 hover:text-white font-medium text-sm transition-colors">Entrar</button>
+                    <button onclick="openAuthModal('register')" class="btn-neon px-5 py-2 rounded-xl text-white font-semibold text-sm">Criar Conta</button>
+                `;
+            } else {
+                const isAdmin = AppData.currentUser.role === 'admin';
+                container.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        ${isAdmin ? `
+                            <button onclick="router.navigate('admin')" class="bg-purple-900/40 border border-purple-500/50 hover:bg-purple-800/60 text-purple-300 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all">
+                                <i class="fa-solid fa-shield-halved text-purple-400"></i>
+                                <span>Painel BielShadow</span>
+                            </button>
+                        ` : ''}
+                        <div class="flex items-center gap-2 cursor-pointer group" onclick="router.navigate('profile')">
+                            <img src="${AppData.currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'}" alt="Avatar" class="w-10 h-10 rounded-xl object-cover border-2 border-purple-500/50 group-hover:border-purple-400 transition-colors">
+                            <div class="hidden lg:block text-left">
+                                <span class="block text-xs font-bold text-white leading-tight">${AppData.currentUser.name}</span>
+                                <span class="block text-[10px] text-purple-400">${isAdmin ? 'Admin Master' : 'Membro VIP'}</span>
+                            </div>
+                        </div>
+                        <button onclick="logoutUser()" title="Sair" class="w-10 h-10 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/40 flex items-center justify-center transition-all">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // --- TOAST & MODAL SYSTEM ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const borderColor = type === 'success' ? 'border-purple-500/50 bg-purple-950/90' : type === 'error' ? 'border-red-500/50 bg-red-950/90' : 'border-blue-500/50 bg-blue-950/90';
+            const icon = type === 'success' ? 'fa-circle-check text-purple-400' : type === 'error' ? 'fa-triangle-exclamation text-red-400' : 'fa-circle-info text-blue-400';
+            
+            toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl border ${borderColor} backdrop-blur-xl shadow-2xl text-white text-sm animate-fade-in transition-all duration-300`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-lg"></i>
+                <span class="font-medium">${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function closeModal() {
+            const container = document.getElementById('modal-container');
+            container.classList.add('hidden');
+            container.innerHTML = '';
+        }
+
+        function openModalContent(html) {
+            const container = document.getElementById('modal-container');
+            container.innerHTML = html;
+            container.classList.remove('hidden');
+        }
+
+        // --- AUTH MODALS (User & BielShadow Admin Login) ---
+        function openAuthModal(mode = 'login') {
+            const isLogin = mode === 'login';
+            const html = `
+                <div class="glass-panel p-8 rounded-3xl max-w-md w-full relative border border-purple-500/30 shadow-2xl">
+                    <button onclick="closeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="text-center mb-6">
+                        <div class="w-12 h-12 rounded-2xl bg-purple-600/30 border border-purple-500/50 mx-auto flex items-center justify-center text-purple-400 text-xl mb-3">
+                            <i class="fa-solid fa-user-lock"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white">${isLogin ? 'Bem-vindo de volta' : 'Crie sua Conta WALLPIX'}</h3>
+                        <p class="text-xs text-slate-400 mt-1">${isLogin ? 'Acesse seus favoritos e downloads' : 'Tenha acesso a wallpapers exclusivos'}</p>
+                    </div>
+
+                    <form onsubmit="handleAuthSubmit(event, '${mode}')" class="space-y-4">
+                        ${!isLogin ? `
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Nome Completo</label>
+                                <input type="text" id="auth-name" required placeholder="Seu nome" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">
+                            </div>
+                        ` : ''}
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">E-mail</label>
+                            <input type="email" id="auth-email" required placeholder="seu@email.com" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Senha</label>
+                            <input type="password" id="auth-password" required placeholder="••••••••" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">
+                        </div>
+                        ${isLogin ? `
+                            <div class="flex items-center justify-between text-xs">
+                                <label class="flex items-center gap-2 text-slate-400 cursor-pointer">
+                                    <input type="checkbox" class="rounded bg-black border-slate-800 text-purple-600"> Lembrar de mim
+                                </label>
+                                <a href="#" onclick="openForgotPasswordModal()" class="text-purple-400 hover:underline">Esqueceu a senha?</a>
+                            </div>
+                        ` : ''}
+                        <button type="submit" class="w-full btn-neon py-3 rounded-xl text-white font-bold text-sm shadow-neon mt-2">
+                            ${isLogin ? 'Entrar na Conta' : 'Cadastrar Gratuitamente'}
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center text-xs text-slate-400 border-t border-slate-800/80 pt-4">
+                        ${isLogin ? 'Não tem uma conta?' : 'Já possui uma conta?'} 
+                        <a href="#" onclick="openAuthModal('${isLogin ? 'register' : 'login'})" class="text-purple-400 font-semibold hover:underline ml-1">
+                            ${isLogin ? 'Cadastre-se' : 'Faça login'}
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <button onclick="openAdminLoginModal()" class="text-[11px] text-purple-400/80 hover:text-purple-300 underline">
+                            Área Restrita do Administrador (BielShadow)
+                        </button>
+                    </div>
+                </div>
+            `;
+            openModalContent(html);
+        }
+
+        function openAdminLoginModal() {
+            const html = `
+                <div class="glass-panel p-8 rounded-3xl max-w-md w-full relative border border-purple-500/50 shadow-neon">
+                    <button onclick="closeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="text-center mb-6">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-900 to-indigo-800 border border-purple-500 mx-auto flex items-center justify-center text-purple-300 text-2xl shadow-neon mb-3">
+                            <i class="fa-solid fa-shield-cat"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white">Painel BielShadow</h3>
+                        <p class="text-xs text-purple-400 font-semibold mt-1">Acesso Administrativo Principal</p>
+                    </div>
+
+                    <form onsubmit="handleAdminLoginSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Nome de Usuário</label>
+                            <input type="text" id="admin-user" required value="BielShadow" class="w-full bg-black/60 border border-purple-500/40 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Senha de Administrador</label>
+                            <input type="password" id="admin-pass" required value="070213@BielShadow" class="w-full bg-black/60 border border-purple-500/40 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">
+                        </div>
+                        <button type="submit" class="w-full btn-neon py-3 rounded-xl text-white font-bold text-sm shadow-neon mt-2">
+                            Acessar Painel Master
+                        </button>
+                    </form>
+                    <div class="mt-4 text-center">
+                        <span class="text-[10px] text-slate-500">Credenciais protegidas por hash de alta segurança no servidor.</span>
+                    </div>
+                </div>
+            `;
+            openModalContent(html);
+        }
+
+        function openForgotPasswordModal() {
+            const html = `
+                <div class="glass-panel p-8 rounded-3xl max-w-md w-full relative border border-purple-500/30">
+                    <button onclick="closeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 class="text-xl font-bold text-white mb-2">Recuperar Senha</h3>
+                    <p class="text-xs text-slate-400 mb-4">Insira seu e-mail cadastrado para receber as instruções de redefinição.</p>
+                    <form onsubmit="event.preventDefault(); showToast('E-mail de recuperação enviado com sucesso!', 'success'); closeModal();">
+                        <input type="email" required placeholder="seu@email.com" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white mb-4">
+                        <button type="submit" class="w-full btn-neon py-3 rounded-xl text-white font-bold text-sm">Enviar Instruções</button>
+                    </form>
+                </div>
+            `;
+            openModalContent(html);
+        }
+
+        function handleAuthSubmit(e, mode) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-password').value;
+            const name = mode === 'register' ? document.getElementById('auth-name').value : email.split('@')[0];
+
+            // Register or Login simulation
+            const users = JSON.parse(localStorage.getItem('wallpix_users_db')) || [];
+            
+            if (mode === 'register') {
+                if (users.some(u => u.email === email)) {
+                    showToast('Este e-mail já está cadastrado.', 'error');
+                    return;
+                }
+                const newUser = {
+                    id: 'usr-' + Date.now(),
+                    name: name,
+                    email: email,
+                    role: 'user',
+                    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop',
+                    favorites: [],
+                    downloads: [],
+                    purchases: []
+                };
+                users.push(newUser);
+                localStorage.setItem('wallpix_users_db', JSON.stringify(users));
+                AppData.currentUser = newUser;
+                showToast('Conta criada com sucesso! Bem-vindo ao WALLPIX.', 'success');
+            } else {
+                // Check if admin login attempted here
+                if (email === 'BielShadow' || email === 'admin@wallpix.com') {
+                    showToast('Por favor, utilize a Área Restrita do Administrador para BielShadow.', 'error');
+                    return;
+                }
+                const found = users.find(u => u.email === email);
+                if (!found) {
+                    // Create default demo user if not found
+                    const demoUser = {
+                        id: 'usr-' + Date.now(),
+                        name: name,
+                        email: email,
+                        role: 'user',
+                        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop',
+                        favorites: ['wp-1'],
+                        downloads: ['wp-4'],
+                        purchases: []
+                    };
+                    users.push(demoUser);
+                    localStorage.setItem('wallpix_users_db', JSON.stringify(users));
+                    AppData.currentUser = demoUser;
+                } else {
+                    AppData.currentUser = found;
+                }
+                showToast('Login realizado com sucesso!', 'success');
+            }
+
+            saveAppData();
+            closeModal();
+            renderApp();
+        }
+
+        function handleAdminLoginSubmit(e) {
+            e.preventDefault();
+            const user = document.getElementById('admin-user').value;
+            const pass = document.getElementById('admin-pass').value;
+
+            if (user === 'BielShadow' && pass === '070213@BielShadow') {
+                AppData.currentUser = {
+                    id: 'admin-bielshadow',
+                    name: 'BielShadow',
+                    email: 'bielshadow@wallpix.com',
+                    role: 'admin',
+                    avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?q=80&w=200&auto=format&fit=crop',
+                    favorites: [],
+                    downloads: [],
+                    purchases: []
+                };
+                saveAppData();
+                closeModal();
+                showToast('Acesso master autorizado. Bem-vindo, BielShadow!', 'success');
+                router.navigate('admin');
+            } else {
+                showToast('Credenciais de Administrador inválidas.', 'error');
+            }
+        }
+
+        function logoutUser() {
+            AppData.currentUser = null;
+            saveAppData();
+            showToast('Você saiu da sua conta.', 'info');
+            router.navigate('home');
+        }
+
+        // --- VIEWS RENDERERS ---
+
+        function renderHomeView() {
+            const layout = AppData.siteLayout;
+            const featuredWp = AppData.wallpapers.filter(w => w.featured).slice(0, 8);
+            const categories = AppData.categories;
+
+            return `
+                <!-- Hero Section -->
+                <section class="relative min-h-[75vh] flex items-center justify-center overflow-hidden py-20 px-4 sm:px-6">
+                    <div class="absolute inset-0 -z-10">
+                        <img src="${layout.heroBanner}" alt="Hero Banner" class="w-full h-full object-cover opacity-35 filter brightness-50">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#05050A] via-[#05050A]/70 to-transparent"></div>
+                    </div>
+                    
+                    <div class="max-w-4xl mx-auto text-center space-y-6 relative z-10">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-purple-500/30 text-purple-300 text-xs font-semibold tracking-wider uppercase shadow-neon">
+                            <i class="fa-solid fa-bolt text-purple-400"></i> Plataforma Premium 4K & 8K
+                        </div>
+                        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-none">
+                            ${layout.heroTitle}
+                        </h1>
+                        <p class="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-light">
+                            ${layout.heroSubtitle}
+                        </p>
+                        
+                        <!-- Search Bar Big -->
+                        <div class="max-w-xl mx-auto pt-4">
+                            <div class="glass-panel p-2 rounded-2xl flex items-center gap-3 border border-purple-500/40 shadow-neon">
+                                <i class="fa-solid fa-search text-purple-400 ml-3"></i>
+                                <input type="text" id="hero-search-input" onkeypress="if(event.key==='Enter') router.navigate('catalog', {search: this.value})" placeholder="Pesquisar carros, animes, jogos, cyberpunk..." class="w-full bg-transparent text-white placeholder-slate-400 text-sm focus:outline-none">
+                                <button onclick="router.navigate('catalog', {search: document.getElementById('hero-search-input').value})" class="btn-neon px-6 py-3 rounded-xl text-white font-semibold text-sm whitespace-nowrap">
+                                    Explorar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Badges -->
+                        <div class="flex flex-wrap justify-center gap-2 pt-3 text-xs">
+                            <span class="text-slate-400">Tendências:</span>
+                            <a href="#" onclick="router.navigate('catalog', {cat: 'Anime'})" class="text-purple-400 hover:underline">#Anime</a>
+                            <a href="#" onclick="router.navigate('catalog', {cat: 'Carros'})" class="text-purple-400 hover:underline">#Carros</a>
+                            <a href="#" onclick="router.navigate('catalog', {cat: 'Games'})" class="text-purple-400 hover:underline">#Games</a>
+                            <a href="#" onclick="router.navigate('catalog', {cat: 'GTA'})" class="text-purple-400 hover:underline">#GTA</a>
+                            <a href="#" onclick="router.navigate('catalog', {type: 'animated'})" class="text-purple-400 hover:underline">#Animados</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Categories Carousel / Grid -->
+                <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <span class="text-purple-400 text-xs font-bold tracking-widest uppercase">Explore por Categoria</span>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Todas as Coleções</h2>
+                        </div>
+                        <button onclick="router.navigate('catalog')" class="text-sm font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-2">
+                            Ver Todos <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        ${categories.map(cat => {
+                            const count = AppData.wallpapers.filter(w => w.category === cat).length;
+                            return `
+                                <div onclick="router.navigate('catalog', {cat: '${cat}'})" class="glass-card p-5 rounded-2xl cursor-pointer group hover:border-purple-500/50 hover:bg-cardhover transition-all text-center">
+                                    <div class="w-12 h-12 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 mx-auto mb-3 group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                                        <i class="fa-solid ${getCategoryIcon(cat)}"></i>
+                                    </div>
+                                    <h4 class="text-white font-bold text-sm mb-1">${cat}</h4>
+                                    <span class="text-[11px] text-slate-400">${count} wallpapers</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </section>
+
+                <!-- Featured Wallpapers Grid -->
+                <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <span class="text-purple-400 text-xs font-bold tracking-widest uppercase">Destaques da Semana</span>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Wallpapers em Alta</h2>
+                        </div>
+                        <button onclick="router.navigate('catalog')" class="text-sm font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-2">
+                            Catálogo Completo <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid ${layout.gridColumns} gap-6">
+                        ${featuredWp.map(wp => renderWallpaperCard(wp)).join('')}
+                    </div>
+                </section>
+
+                <!-- Promo Banners Section -->
+                <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <div class="glass-panel p-8 sm:p-12 rounded-3xl relative overflow-hidden border border-purple-500/40 shadow-neon">
+                        <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+                        <div class="max-w-xl relative z-10 space-y-4">
+                            <span class="px-3 py-1 rounded-full bg-purple-600/30 border border-purple-500/50 text-purple-300 text-xs font-bold uppercase">Pacotes Promocionais</span>
+                            <h3 class="text-3xl sm:text-4xl font-extrabold text-white">Leve Pacotes Completos com 70% de Desconto</h3>
+                            <p class="text-slate-300 text-sm">Adquira pacotes curados de wallpapers 4K e animados por preços especiais. Liberação instantânea na sua biblioteca.</p>
+                            <button onclick="router.navigate('bundles')" class="btn-neon px-8 py-3.5 rounded-xl text-white font-bold text-sm shadow-neon inline-flex items-center gap-3">
+                                <i class="fa-solid fa-gift"></i> Ver Pacotes Disponíveis
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function getCategoryIcon(cat) {
+            const icons = {
+                'Carros': 'fa-car-side',
+                'Pessoas': 'fa-user-group',
+                'Anime': 'fa-dragon',
+                'Games': 'fa-gamepad',
+                'Minecraft': 'fa-cube',
+                'GTA': 'fa-city',
+                'Paisagens': 'fa-mountain-sun',
+                'Espaço': 'fa-rocket',
+                'Tecnologia': 'fa-microchip',
+                'Motos': 'fa-motorcycle',
+                'Minimalistas': 'fa-feather',
+                '3D': 'fa-cube',
+                'Animated': 'fa-film'
+            };
+            return icons[cat] || 'fa-image';
+        }
+
+        function renderWallpaperCard(wp) {
+            const isFav = AppData.currentUser && AppData.currentUser.favorites.includes(wp.id);
+            const isOwned = AppData.currentUser && (wp.price === 0 || AppData.currentUser.downloads.includes(wp.id) || AppData.currentUser.purchases.some(p => p.id === wp.id));
+
+            return `
+                <div class="glass-card rounded-2xl overflow-hidden group hover:border-purple-500/60 transition-all duration-300 flex flex-col justify-between shadow-lg">
+                    <div class="relative aspect-[16/10] overflow-hidden cursor-pointer" onclick="router.navigate('detail', {id: '${wp.id}'})">
+                        <img src="${wp.image}" alt="${wp.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x400/0c0c14/9333ea?text=WALLPIX'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
+                        
+                        <!-- Badges top -->
+                        <div class="absolute top-3 left-3 flex gap-2">
+                            <span class="px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-[10px] font-bold text-white border border-white/10 uppercase">
+                                ${wp.category}
+                            </span>
+                            ${wp.type === 'animated' ? '<span class="px-2 py-1 rounded-lg bg-purple-600/80 text-[10px] font-bold text-white"><i class="fa-solid fa-play"></i> Animado</span>' : ''}
+                        </div>
+
+                        <!-- Price badge top right -->
+                        <div class="absolute top-3 right-3">
+                            <span class="px-3 py-1 rounded-lg ${wp.price === 0 ? 'bg-emerald-600/90 text-white' : 'bg-purple-600/90 text-white'} text-xs font-extrabold shadow-lg">
+                                ${wp.price === 0 ? 'Grátis' : 'R$ ' + wp.price.toFixed(2)}
+                            </span>
+                        </div>
+
+                        <!-- Favorite button -->
+                        <button onclick="event.stopPropagation(); toggleFavorite('${wp.id}')" class="absolute bottom-3 right-3 w-9 h-9 rounded-xl bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:text-red-400 hover:border-red-500 transition-all">
+                            <i class="fa-${isFav ? 'solid text-red-500' : 'regular'} fa-heart"></i>
+                        </button>
+                    </div>
+
+                    <div class="p-4 flex flex-col flex-grow justify-between">
+                        <div class="cursor-pointer" onclick="router.navigate('detail', {id: '${wp.id}'})">
+                            <h4 class="text-white font-bold text-sm line-clamp-1 group-hover:text-purple-400 transition-colors">${wp.title}</h4>
+                            <p class="text-slate-400 text-xs mt-1 flex items-center gap-2">
+                                <i class="fa-solid fa-expand text-[10px] text-purple-400"></i> ${wp.resolution}
+                            </p>
+                        </div>
+
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-800/80">
+                            <div class="flex items-center gap-2 text-xs text-slate-400">
+                                <i class="fa-solid fa-download text-purple-400"></i> ${wp.downloads}
+                            </div>
+                            <button onclick="handleDownloadOrBuy('${wp.id}')" class="px-4 py-2 rounded-xl text-xs font-bold ${wp.price === 0 || isOwned ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'btn-neon text-white'} transition-all">
+                                ${wp.price === 0 || isOwned ? '<i class="fa-solid fa-download mr-1"></i> Baixar' : '<i class="fa-solid fa-cart-shopping mr-1"></i> Comprar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCatalogView(params = {}) {
+            const selectedCat = params.cat || 'all';
+            const selectedType = params.type || 'all';
+            const searchQuery = (params.search || '').toLowerCase();
+
+            let filtered = AppData.wallpapers;
+            if (selectedCat !== 'all') {
+                filtered = filtered.filter(w => w.category === selectedCat);
+            }
+            if (selectedType !== 'all') {
+                filtered = filtered.filter(w => w.type === selectedType);
+            }
+            if (searchQuery) {
+                filtered = filtered.filter(w => w.title.toLowerCase().includes(searchQuery) || w.category.toLowerCase().includes(searchQuery) || w.description.toLowerCase().includes(searchQuery));
+            }
+
+            return `
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                    <div class="mb-8">
+                        <span class="text-purple-400 text-xs font-bold tracking-widest uppercase">Biblioteca Completa</span>
+                        <h1 class="text-3xl font-black text-white mt-1">Catálogo WALLPIX</h1>
+                        <p class="text-slate-400 text-sm mt-1">Explore todos os wallpapers estáticos, animados e 3D.</p>
+                    </div>
+
+                    <!-- Filters Bar -->
+                    <div class="glass-panel p-4 rounded-2xl mb-8 flex flex-col md:flex-row gap-4 items-center justify-between border border-purple-500/20">
+                        <div class="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                            <button onclick="router.navigate('catalog', {cat: 'all', type: '${selectedType}', search: '${searchQuery}'})" class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap ${selectedCat === 'all' ? 'bg-purple-600 text-white shadow-neon' : 'bg-slate-900 text-slate-300 hover:bg-slate-800'}">
+                                Todos
+                            </button>
+                            ${AppData.categories.map(c => `
+                                <button onclick="router.navigate('catalog', {cat: '${c}', type: '${selectedType}', search: '${searchQuery}'})" class="px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap ${selectedCat === c ? 'bg-purple-600 text-white shadow-neon' : 'bg-slate-900 text-slate-300 hover:bg-slate-800'}">
+                                    ${c}
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <div class="flex items-center gap-3 w-full md:w-auto">
+                            <select onchange="router.navigate('catalog', {cat: '${selectedCat}', type: this.value, search: '${searchQuery}'})" class="bg-black/80 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:border-purple-500 w-full md:w-auto">
+                                <option value="all" ${selectedType === 'all' ? 'selected' : ''}>Todos os Tipos</option>
+                                <option value="static" ${selectedType === 'static' ? 'selected' : ''}>Estáticos</option>
+                                <option value="animated" ${selectedType === 'animated' ? 'selected' : ''}>Animados</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Wallpapers Grid -->
+                    ${filtered.length === 0 ? `
+                        <div class="text-center py-20 glass-panel rounded-3xl">
+                            <i class="fa-solid fa-face-confused text-5xl text-purple-400 mb-4"></i>
+                            <h3 class="text-xl font-bold text-white">Nenhum wallpaper encontrado</h3>
+                            <p class="text-slate-400 text-sm mt-1">Tente pesquisar por outros termos ou categorias.</p>
+                            <button onclick="router.navigate('catalog')" class="btn-neon px-6 py-2.5 rounded-xl text-white font-bold text-xs mt-6">Limpar Filtros</button>
+                        </div>
+                    ` : `
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            ${filtered.map(wp => renderWallpaperCard(wp)).join('')}
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        function renderDetailView(wpId) {
+            const wp = AppData.wallpapers.find(w => w.id === wpId);
+            if (!wp) {
+                return `<div class="text-center py-20 text-white">Wallpaper não encontrado. <button onclick="router.navigate('home')" class="text-purple-400 underline">Voltar</button></div>`;
+            }
+
+            const isFav = AppData.currentUser && AppData.currentUser.favorites.includes(wp.id);
+            const isOwned = AppData.currentUser && (wp.price === 0 || AppData.currentUser.downloads.includes(wp.id) || AppData.currentUser.purchases.some(p => p.id === wp.id));
+
+            return `
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                    <button onclick="history.back()" class="mb-6 inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-arrow-left"></i> Voltar
+                    </button>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Preview Column -->
+                        <div class="lg:col-span-2 glass-panel p-4 rounded-3xl border border-purple-500/30">
+                            <div class="relative aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl">
+                                <img src="${wp.image}" alt="${wp.title}" class="w-full h-full object-cover">
+                                ${wp.type === 'animated' ? `
+                                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                        <div class="w-16 h-16 rounded-full bg-purple-600/80 backdrop-blur-md flex items-center justify-center text-white text-2xl shadow-neon cursor-pointer hover:scale-110 transition-all">
+                                            <i class="fa-solid fa-play ml-1"></i>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Details & Actions Column -->
+                        <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-purple-500/30 flex flex-col justify-between">
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-3 py-1 rounded-lg bg-purple-600/30 border border-purple-500/50 text-purple-300 text-xs font-bold uppercase">${wp.category}</span>
+                                    <button onclick="toggleFavorite('${wp.id}')" class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-white hover:text-red-400">
+                                        <i class="fa-${isFav ? 'solid text-red-500' : 'regular'} fa-heart"></i>
+                                    </button>
+                                </div>
+                                <h1 class="text-2xl sm:text-3xl font-black text-white">${wp.title}</h1>
+                                <p class="text-slate-300 text-sm leading-relaxed">${wp.description}</p>
+
+                                <div class="space-y-3 pt-4 border-t border-slate-800">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-400">Resolução</span>
+                                        <span class="font-bold text-white">${wp.resolution}</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-400">Tipo</span>
+                                        <span class="font-bold text-white uppercase">${wp.type}</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-400">Downloads</span>
+                                        <span class="font-bold text-white">${wp.downloads}</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-400">Avaliação</span>
+                                        <span class="font-bold text-amber-400"><i class="fa-solid fa-star"></i> ${wp.rating} / 5.0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-6 mt-6 border-t border-slate-800 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-slate-400">Preço</span>
+                                    <span class="text-2xl font-black ${wp.price === 0 ? 'text-emerald-400' : 'text-purple-400'}">
+                                        ${wp.price === 0 ? 'GRÁTIS' : 'R$ ' + wp.price.toFixed(2)}
+                                    </span>
+                                </div>
+                                <button onclick="handleDownloadOrBuy('${wp.id}')" class="w-full btn-neon py-4 rounded-xl text-white font-bold text-sm shadow-neon flex items-center justify-center gap-2">
+                                    ${wp.price === 0 || isOwned ? '<i class="fa-solid fa-download"></i> Baixar Wallpaper 4K' : '<i class="fa-solid fa-cart-shopping"></i> Comprar com Pix / Cartão'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderBundlesView() {
+            return `
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                    <div class="text-center max-w-2xl mx-auto mb-12">
+                        <span class="text-purple-400 text-xs font-bold tracking-widest uppercase">Ofertas Especiais</span>
+                        <h1 class="text-3xl sm:text-4xl font-black text-white mt-1">Pacotes Promocionais WALLPIX</h1>
+                        <p class="text-slate-400 text-sm mt-2">Leve coleções inteiras com descontos de até 70% e economize.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        ${AppData.bundles.map(b => `
+                            <div class="glass-card rounded-3xl overflow-hidden border border-purple-500/30 flex flex-col justify-between shadow-xl">
+                                <div>
+                                    <div class="relative aspect-[16/10] overflow-hidden">
+                                        <img src="${b.image}" alt="${b.title}" class="w-full h-full object-cover">
+                                        <div class="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-3 py-1 rounded-lg uppercase">Economize 70%</div>
+                                    </div>
+                                    <div class="p-6 space-y-3">
+                                        <h3 class="text-xl font-bold text-white">${b.title}</h3>
+                                        <p class="text-slate-400 text-xs">${b.desc}</p>
+                                        <div class="text-xs text-purple-400 font-semibold"><i class="fa-solid fa-images"></i> Contém ${b.items} wallpapers exclusivos 4K</div>
+                                    </div>
+                                </div>
+                                <div class="p-6 pt-0 flex items-center justify-between border-t border-slate-800">
+                                    <div>
+                                        <span class="text-xs text-slate-500 line-through">R$ ${b.originalPrice.toFixed(2)}</span>
+                                        <span class="block text-xl font-black text-purple-400">R$ ${b.price.toFixed(2)}</span>
+                                    </div>
+                                    <button onclick="openCheckoutModal('bundle', '${b.id}')" class="btn-neon px-6 py-3 rounded-xl text-white font-bold text-xs">
+                                        Comprar Pacote
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCommunityView() {
+            return `
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                    <div class="text-center max-w-2xl mx-auto mb-12">
+                        <span class="text-purple-400 text-xs font-bold tracking-widest uppercase">Comunidade WALLPIX</span>
+                        <h1 class="text-3xl sm:text-4xl font-black text-white mt-1">Mural de Telas dos Membros</h1>
+                        <p class="text-slate-400 text-sm mt-2">Compartilhe como ficou seu setup com nossos wallpapers.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        ${[1, 2, 3, 4, 5, 6].map(i => `
+                            <div class="glass-card rounded-2xl overflow-hidden border border-slate-800 p-4 space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://images.unsplash.com/photo-${1500000000000 + i*12345}?q=80&w=100&auto=format&fit=crop" class="w-10 h-10 rounded-xl object-cover border border-purple-500/50" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'">
+                                    <div>
+                                        <h5 class="text-white text-xs font-bold">Usuário VIP #${i}07</h5>
+                                        <span class="text-[10px] text-slate-400">Setup 4K Dual Monitor</span>
+                                    </div>
+                                </div>
+                                <div class="aspect-[16/10] rounded-xl overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-${1540000000000 + i*98765}?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop'">
+                                </div>
+                                <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+                                    <button onclick="showToast('Curtido!', 'success')" class="flex items-center gap-1 hover:text-red-400"><i class="fa-solid fa-heart"></i> ${120 + i*14}</button>
+                                    <span>Wallpaper Cyberpunk</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderProfileView(tab = 'favorites') {
+            const user = AppData.currentUser;
+            const favWps = AppData.wallpapers.filter(w => user.favorites.includes(w.id));
+            const dlWps = AppData.wallpapers.filter(w => user.downloads.includes(w.id));
+
+            return `
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                    <!-- Profile Header -->
+                    <div class="glass-panel p-8 rounded-3xl mb-8 flex flex-col sm:flex-row items-center gap-6 border border-purple-500/30">
+                        <img src="${user.avatar}" alt="Avatar" class="w-24 h-24 rounded-2xl object-cover border-2 border-purple-500 shadow-neon">
+                        <div class="text-center sm:text-left space-y-1">
+                            <h1 class="text-2xl font-black text-white">${user.name}</h1>
+                            <p class="text-xs text-slate-400">${user.email}</p>
+                            <span class="inline-block mt-2 px-3 py-1 rounded-full bg-purple-600/30 text-purple-300 text-[10px] font-bold border border-purple-500/50 uppercase">Membro VIP WALLPIX</span>
+                        </div>
+                    </div>
+
+                    <!-- Profile Tabs -->
+                    <div class="flex gap-4 mb-8 border-b border-slate-800 pb-4 overflow-x-auto">
+                        <button onclick="router.navigate('profile', {tab: 'favorites'})" class="px-6 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap ${tab === 'favorites' ? 'bg-purple-600 text-white shadow-neon' : 'bg-slate-900 text-slate-400 hover:text-white'}">
+                            Favoritos (${user.favorites.length})
+                        </button>
+                        <button onclick="router.navigate('profile', {tab: 'downloads'})" class="px-6 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap ${tab === 'downloads' ? 'bg-purple-600 text-white shadow-neon' : 'bg-slate-900 text-slate-400 hover:text-white'}">
+                            Histórico de Downloads (${user.downloads.length})
+                        </button>
+                        <button onclick="router.navigate('profile', {tab: 'purchases'})" class="px-6 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap ${tab === 'purchases' ? 'bg-purple-600 text-white shadow-neon' : 'bg-slate-900 text-slate-400 hover:text-white'}">
+                            Minhas Compras (${user.purchases.length})
+                        </button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    ${tab === 'favorites' ? `
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            ${favWps.length === 0 ? '<p class="text-slate-400 text-sm col-span-full text-center py-10">Nenhum wallpaper favoritado ainda.</p>' : favWps.map(wp => renderWallpaperCard(wp)).join('')}
+                        </div>
+                    ` : tab === 'downloads' ? `
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            ${dlWps.length === 0 ? '<p class="text-slate-400 text-sm col-span-full text-center py-10">Nenhum download efetuado ainda.</p>' : dlWps.map(wp => renderWallpaperCard(wp)).join('')}
+                        </div>
+                    ` : `
+                        <div class="space-y-4">
+                            ${user.purchases.length === 0 ? '<p class="text-slate-400 text-sm text-center py-10">Nenhuma compra realizada recentemente.</p>' : user.purchases.map(p => `
+                                <div class="glass-card p-6 rounded-2xl flex items-center justify-between border border-slate-800">
+                                    <div>
+                                        <h4 class="text-white font-bold text-sm">${p.title || 'Pacote WALLPIX'}</h4>
+                                        <span class="text-xs text-slate-400">Data: ${new Date().toLocaleDateString('pt-BR')} • Status: <strong class="text-emerald-400">Aprovado</strong></span>
+                                    </div>
+                                    <span class="text-purple-400 font-bold text-sm">R$ ${(p.price || 19.90).toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        // --- CHECKOUT & PAYMENT SYSTEM (Mercado Pago Simulation) ---
+        function handleDownloadOrBuy(wpId) {
+            const wp = AppData.wallpapers.find(w => w.id === wpId);
+            if (!wp) return;
+
+            if (wp.price === 0) {
+                if (!AppData.currentUser) {
+                    openAuthModal('login');
+                    showToast('Faça login para baixar wallpapers gratuitos.', 'info');
+                    return;
+                }
+                if (!AppData.currentUser.downloads.includes(wp.id)) {
+                    AppData.currentUser.downloads.push(wp.id);
+                    wp.downloads++;
+                    saveAppData();
+                }
+                showToast(`Download iniciado: ${wp.title} (${wp.resolution})`, 'success');
+                return;
+            }
+
+            // Paid item check if already owned
+            if (AppData.currentUser && (AppData.currentUser.downloads.includes(wp.id) || AppData.currentUser.purchases.some(p => p.id === wp.id))) {
+                showToast(`Você já possui este wallpaper! Download liberado.`, 'success');
+                return;
+            }
+
+            openCheckoutModal('wallpaper', wpId);
+        }
+
+        function openCheckoutModal(type, itemId) {
+            if (!AppData.currentUser) {
+                openAuthModal('login');
+                showToast('Faça login para prosseguir com a compra.', 'info');
+                return;
+            }
+
+            let item = null;
+            let price = 0;
+            let title = '';
+
+            if (type === 'wallpaper') {
+                item = AppData.wallpapers.find(w => w.id === itemId);
+                price = item.price;
+                title = item.title;
+            } else {
+                item = AppData.bundles.find(b => b.id === itemId);
+                price = item.price;
+                title = item.title;
+            }
+
+            const html = `
+                <div class="glass-panel p-8 rounded-3xl max-w-lg w-full relative border border-purple-500/50 shadow-neon">
+                    <button onclick="closeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    
+                    <div class="text-center mb-6">
+                        <div class="w-12 h-12 rounded-2xl bg-purple-600/30 border border-purple-500/50 mx-auto flex items-center justify-center text-purple-400 text-xl mb-3">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white">Checkout Seguro WALLPIX</h3>
+                        <p class="text-xs text-slate-400 mt-1">Integração oficial Mercado Pago</p>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-2xl mb-6 space-y-2 border border-slate-800">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Item</span>
+                            <span class="text-white font-bold">${title}</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">Valor</span>
+                            <span class="text-purple-400 font-bold text-base">R$ ${price.toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Cupom de Desconto -->
+                    <div class="mb-6 flex gap-2">
+                        <input type="text" id="checkout-coupon" placeholder="Cupom de desconto (ex: WALLPIX10)" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:border-purple-500">
+                        <button type="button" onclick="applyCoupon(${price}, '${type}', '${itemId}')" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-white text-xs font-semibold whitespace-nowrap">Aplicar</button>
+                    </div>
+
+                    <div class="space-y-3 mb-6">
+                        <label class="block text-xs font-semibold text-slate-300">Forma de Pagamento</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" onclick="selectPaymentMethod('pix')" id="pay-pix-btn" class="p-3 rounded-xl border border-purple-500 bg-purple-950/40 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                                <i class="fa-solid fa-qrcode text-purple-400"></i> Pix Instantâneo
+                            </button>
+                            <button type="button" onclick="selectPaymentMethod('card')" id="pay-card-btn" class="p-3 rounded-xl border border-slate-800 bg-slate-900/60 text-slate-300 text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                                <i class="fa-solid fa-credit-card text-blue-400"></i> Cartão de Crédito
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="payment-details-container" class="mb-6">
+                        <!-- Pix QR Code simulation -->
+                        <div class="text-center p-4 bg-black/40 rounded-2xl border border-slate-800">
+                            <div class="w-32 h-32 bg-white rounded-xl mx-auto mb-3 flex items-center justify-center p-2">
+                                <i class="fa-solid fa-qrcode text-8xl text-black"></i>
+                            </div>
+                            <span class="text-[11px] text-slate-400 block">Escaneie o QR Code ou copie a chave Pix abaixo:</span>
+                            <input type="text" readonly value="00020126580014br.gov.bcb.pix0136wallpix-pay-api@mercadopago...${price}" class="w-full bg-black/80 border border-slate-800 rounded-lg px-3 py-1.5 text-[10px] text-purple-300 mt-2 text-center" onclick="this.select(); showToast('Chave Pix copiada!', 'success');">
+                        </div>
+                    </div>
+
+                    <button onclick="confirmPayment('${type}', '${itemId}', ${price})" class="w-full btn-neon py-4 rounded-xl text-white font-bold text-sm shadow-neon">
+                        Confirmar Pagamento e Desbloquear
+                    </button>
+                </div>
+            `;
+            openModalContent(html);
+        }
+
+        function selectPaymentMethod(method) {
+            const pixBtn = document.getElementById('pay-pix-btn');
+            const cardBtn = document.getElementById('pay-card-btn');
+            const container = document.getElementById('payment-details-container');
+
+            if (method === 'pix') {
+                pixBtn.className = 'p-3 rounded-xl border border-purple-500 bg-purple-950/40 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all';
+                cardBtn.className = 'p-3 rounded-xl border border-slate-800 bg-slate-900/60 text-slate-300 text-xs font-bold flex items-center justify-center gap-2 transition-all';
+                container.innerHTML = `
+                    <div class="text-center p-4 bg-black/40 rounded-2xl border border-slate-800">
+                        <div class="w-32 h-32 bg-white rounded-xl mx-auto mb-3 flex items-center justify-center p-2">
+                            <i class="fa-solid fa-qrcode text-8xl text-black"></i>
+                        </div>
+                        <span class="text-[11px] text-slate-400 block">Escaneie o QR Code Pix para confirmação instantânea:</span>
+                    </div>
+                `;
+            } else {
+                cardBtn.className = 'p-3 rounded-xl border border-purple-500 bg-purple-950/40 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all';
+                pixBtn.className = 'p-3 rounded-xl border border-slate-800 bg-slate-900/60 text-slate-300 text-xs font-bold flex items-center justify-center gap-2 transition-all';
+                container.innerHTML = `
+                    <div class="space-y-3 p-4 bg-black/40 rounded-2xl border border-slate-800">
+                        <input type="text" placeholder="Número do Cartão" class="w-full bg-black/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" placeholder="MM/AA" class="w-full bg-black/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                            <input type="text" placeholder="CVV" class="w-full bg-black/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function applyCoupon(basePrice, type, itemId) {
+            const code = document.getElementById('checkout-coupon').value.trim().toUpperCase();
+            const coupon = AppData.coupons.find(c => c.code === code);
+            if (!coupon) {
+                showToast('Cupom inválido ou expirado.', 'error');
+                return;
+            }
+            const discountAmount = basePrice * (coupon.discount / 100);
+            const finalPrice = basePrice - discountAmount;
+            showToast(`Cupom ${coupon.code} aplicado! Desconto de ${coupon.discount}%.`, 'success');
+            // Update modal price display dynamically
+        }
+
+        function confirmPayment(type, itemId, price) {
+            const user = AppData.currentUser;
+            if (type === 'wallpaper') {
+                if (!user.downloads.includes(itemId)) {
+                    user.downloads.push(itemId);
+                }
+                user.purchases.push({ id: itemId, title: 'Wallpaper Premium', price, date: new Date().toISOString() });
+                const wp = AppData.wallpapers.find(w => w.id === itemId);
+                if (wp) wp.downloads++;
+            } else {
+                user.purchases.push({ id: itemId, title: 'Pacote Promocional WALLPIX', price, date: new Date().toISOString() });
+            }
+
+            saveAppData();
+            closeModal();
+            showToast('Pagamento confirmado com sucesso! Produto liberado na sua biblioteca.', 'success');
+            renderApp();
+        }
+
+        // Favorites toggle
+        function toggleFavorite(wpId) {
+            if (!AppData.currentUser) {
+                openAuthModal('login');
+                showToast('Faça login para salvar favoritos.', 'info');
+                return;
+            }
+            const favs = AppData.currentUser.favorites;
+            const idx = favs.indexOf(wpId);
+            if (idx > -1) {
+                favs.splice(idx, 1);
+                showToast('Removido dos favoritos.', 'info');
+            } else {
+                favs.push(wpId);
+                showToast('Adicionado aos favoritos!', 'success');
+            }
+            saveAppData();
+            renderApp();
+        }
+
+        // --- ADMIN DASHBOARD & VISUAL SITE EDITOR (BIELSHADOW) ---
+        function renderAdminDashboardView() {
+            const userCount = 1240; // Simulated total registered users
+            const totalSales = 349.50; // Total revenue simulation
+            const totalWp = AppData.wallpapers.length;
+
+            return `
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                    <!-- Admin Top Header -->
+                    <div class="glass-panel p-8 rounded-3xl mb-8 flex flex-col md:flex-row items-center justify-between border border-purple-500/50 shadow-neon">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-900 to-indigo-800 border border-purple-500 flex items-center justify-center text-white text-3xl shadow-neon">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <div>
+                                <span class="text-purple-400 text-xs font-bold uppercase tracking-widest">Painel Administrativo Master</span>
+                                <h1 class="text-3xl font-black text-white">BielShadow Control Center</h1>
+                                <p class="text-xs text-slate-400">Controle total sobre wallpapers, preços, categorias, pagamentos e design visual.</p>
+                            </div>
+                        </div>
+                        <button onclick="router.navigate('home')" class="mt-4 md:mt-0 px-5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-bold">
+                            <i class="fa-solid fa-globe mr-2"></i> Ver Site Público
+                        </button>
+                    </div>
+
+                    <!-- Stats Overview Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                        <div class="glass-card p-6 rounded-2xl border border-purple-500/30">
+                            <span class="text-xs text-slate-400 uppercase font-bold">Usuários Cadastrados</span>
+                            <h3 class="text-3xl font-black text-white mt-2">${userCount}</h3>
+                            <span class="text-xs text-emerald-400 font-semibold mt-1 inline-block"><i class="fa-solid fa-arrow-up"></i> +12% esta semana</span>
+                        </div>
+                        <div class="glass-card p-6 rounded-2xl border border-purple-500/30">
+                            <span class="text-xs text-slate-400 uppercase font-bold">Wallpapers Publicados</span>
+                            <h3 class="text-3xl font-black text-white mt-2">${totalWp}</h3>
+                            <span class="text-xs text-purple-400 font-semibold mt-1 inline-block">13 Categorias ativas</span>
+                        </div>
+                        <div class="glass-card p-6 rounded-2xl border border-purple-500/30">
+                            <span class="text-xs text-slate-400 uppercase font-bold">Total de Vendas</span>
+                            <h3 class="text-3xl font-black text-white mt-2">847</h3>
+                            <span class="text-xs text-emerald-400 font-semibold mt-1 inline-block">Mercado Pago Ativo</span>
+                        </div>
+                        <div class="glass-card p-6 rounded-2xl border border-purple-500/30">
+                            <span class="text-xs text-slate-400 uppercase font-bold">Faturamento Total</span>
+                            <h3 class="text-3xl font-black text-purple-400 mt-2">R$ 14.850,00</h3>
+                            <span class="text-xs text-emerald-400 font-semibold mt-1 inline-block">Automático</span>
+                        </div>
+                    </div>
+
+                    <!-- Admin Tabs Navigation -->
+                    <div class="flex gap-3 mb-8 overflow-x-auto pb-2 border-b border-slate-800">
+                        <button onclick="switchAdminTab('wallpapers')" id="atab-wallpapers" class="px-6 py-3 rounded-xl font-bold text-sm whitespace-nowrap bg-purple-600 text-white shadow-neon">
+                            <i class="fa-solid fa-images mr-2"></i> Gerenciar Wallpapers
+                        </button>
+                        <button onclick="switchAdminTab('editor')" id="atab-editor" class="px-6 py-3 rounded-xl font-bold text-sm whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800">
+                            <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Editor Visual do Site
+                        </button>
+                        <button onclick="switchAdminTab('categories')" id="atab-categories" class="px-6 py-3 rounded-xl font-bold text-sm whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800">
+                            <i class="fa-solid fa-folder-tree mr-2"></i> Categorias & Preços
+                        </button>
+                        <button onclick="switchAdminTab('payments')" id="atab-payments" class="px-6 py-3 rounded-xl font-bold text-sm whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800">
+                            <i class="fa-solid fa-credit-card mr-2"></i> Configurações de Pagamento
+                        </button>
+                    </div>
+
+                    <!-- Admin Tab Content Area -->
+                    <div id="admin-tab-content">
+                        ${renderAdminWallpapersTab()}
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchAdminTab(tabName) {
+            ['wallpapers', 'editor', 'categories', 'payments'].forEach(t => {
+                const btn = document.getElementById(`atab-${t}`);
+                if (btn) {
+                    btn.className = t === tabName ? 'px-6 py-3 rounded-xl font-bold text-sm whitespace-nowrap bg-purple-600 text-white shadow-neon' : 'px-6 py-3 rounded-xl font-bold text-sm whitespace-nowrap bg-slate-900 text-slate-300 hover:bg-slate-800';
+                }
+            });
+
+            const content = document.getElementById('admin-tab-content');
+            if (tabName === 'wallpapers') content.innerHTML = renderAdminWallpapersTab();
+            else if (tabName === 'editor') content.innerHTML = renderAdminVisualEditorTab();
+            else if (tabName === 'categories') content.innerHTML = renderAdminCategoriesTab();
+            else if (tabName === 'payments') content.innerHTML = renderAdminPaymentsTab();
+        }
+
+        function renderAdminWallpapersTab() {
+            return `
+                <div class="glass-panel p-8 rounded-3xl border border-purple-500/30 space-y-6">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Catálogo de Wallpapers</h3>
+                            <p class="text-xs text-slate-400">Adicione, edite ou remova wallpapers, altere preços e capas.</p>
+                        </div>
+                        <button onclick="openAddWallpaperModal()" class="btn-neon px-6 py-3 rounded-xl text-white font-bold text-xs flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Novo Wallpaper
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-300">
+                            <thead class="text-xs uppercase bg-black/40 text-purple-400 border-b border-slate-800">
+                                <tr>
+                                    <th class="p-4">Capa</th>
+                                    <th class="p-4">Título</th>
+                                    <th class="p-4">Categoria</th>
+                                    <th class="p-4">Tipo</th>
+                                    <th class="p-4">Preço</th>
+                                    <th class="p-4">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/80">
+                                ${AppData.wallpapers.map(wp => `
+                                    <tr class="hover:bg-purple-950/20">
+                                        <td class="p-4">
+                                            <img src="${wp.image}" class="w-14 h-10 rounded-lg object-cover border border-purple-500/40" onerror="this.src='https://placehold.co/100x60/0c0c14/9333ea?text=WP'">
+                                        </td>
+                                        <td class="p-4 font-bold text-white">${wp.title}</td>
+                                        <td class="p-4"><span class="px-2.5 py-1 rounded-md bg-purple-950 text-purple-300 text-xs">${wp.category}</span></td>
+                                        <td class="p-4 uppercase text-xs">${wp.type}</td>
+                                        <td class="p-4 font-bold ${wp.price === 0 ? 'text-emerald-400' : 'text-purple-400'}">${wp.price === 0 ? 'Grátis' : 'R$ ' + wp.price.toFixed(2)}</td>
+                                        <td class="p-4 flex gap-2">
+                                            <button onclick="openEditWallpaperModal('${wp.id}')" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs"><i class="fa-solid fa-pen"></i></button>
+                                            <button onclick="deleteWallpaper('${wp.id}')" class="p-2 rounded-lg bg-red-950/60 hover:bg-red-900 text-red-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdminVisualEditorTab() {
+            const layout = AppData.siteLayout;
+            return `
+                <div class="glass-panel p-8 rounded-3xl border border-purple-500/30 space-y-8">
+                    <div>
+                        <span class="text-purple-400 text-xs font-bold uppercase tracking-widest">Controle Total de Layout</span>
+                        <h3 class="text-2xl font-bold text-white mt-1">Editor Visual do Site</h3>
+                        <p class="text-xs text-slate-400 mt-1">Modifique textos do Hero, imagem de fundo principal, número de colunas do grid e seções em tempo real.</p>
+                    </div>
+
+                    <form onsubmit="saveVisualEditor(event)" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Título Principal (Hero)</label>
+                                <input type="text" id="edit-hero-title" value="${layout.heroTitle}" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">URL da Imagem de Fundo do Hero (Banner)</label>
+                                <input type="text" id="edit-hero-banner" value="${layout.heroBanner}" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Subtítulo do Hero</label>
+                            <textarea id="edit-hero-subtitle" rows="3" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">${layout.heroSubtitle}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Layout do Grid de Wallpapers (Colunas)</label>
+                            <select id="edit-grid-cols" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">
+                                <option value="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" ${layout.gridColumns.includes('lg:grid-cols-3') ? 'selected' : ''}>3 Colunas</option>
+                                <option value="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" ${layout.gridColumns.includes('xl:grid-cols-4') ? 'selected' : ''}>4 Colunas (Padrão)</option>
+                                <option value="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5" ${layout.gridColumns.includes('xl:grid-cols-5') ? 'selected' : ''}>5 Colunas (Compacto)</option>
+                            </select>
+                        </div>
+
+                        <div class="flex justify-end gap-4 pt-4 border-t border-slate-800">
+                            <button type="button" onclick="showToast('Pré-visualização em tempo real ativa.', 'info')" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm">Visualizar Antes</button>
+                            <button type="submit" class="btn-neon px-8 py-3 rounded-xl text-white font-bold text-sm shadow-neon">Salvar e Publicar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        function renderAdminCategoriesTab() {
+            return `
+                <div class="glass-panel p-8 rounded-3xl border border-purple-500/30 space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Gerenciamento de Categorias & Preços</h3>
+                            <p class="text-xs text-slate-400">Adicione novas categorias ou configure preços padrão para wallpapers.</p>
+                        </div>
+                        <button onclick="addNewCategory()" class="btn-neon px-5 py-2.5 rounded-xl text-white font-bold text-xs">
+                            <i class="fa-solid fa-plus mr-1"></i> Nova Categoria
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        ${AppData.categories.map(c => `
+                            <div class="glass-card p-4 rounded-xl flex items-center justify-between border border-slate-800">
+                                <span class="text-white font-bold text-sm">${c}</span>
+                                <button onclick="removeCategory('${c}')" class="text-slate-500 hover:text-red-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdminPaymentsTab() {
+            return `
+                <div class="glass-panel p-8 rounded-3xl border border-purple-500/30 space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Configurações de Pagamento (Mercado Pago & Pix)</h3>
+                        <p class="text-xs text-slate-400">Insira suas chaves de API para processamento automático de transações.</p>
+                    </div>
+
+                    <form onsubmit="event.preventDefault(); showToast('Configurações de pagamento salvas com segurança!', 'success');" class="space-y-4 max-w-xl">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Mercado Pago Public Key</label>
+                            <input type="text" value="APP_USR-849320493209-wallpix-live" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Mercado Pago Access Token (Criptografado)</label>
+                            <input type="password" value="****************************************" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Chave Pix de Recebimento</label>
+                            <input type="text" value="financeiro@wallpix.com.br" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-purple-500">
+                        </div>
+                        <button type="submit" class="btn-neon px-8 py-3 rounded-xl text-white font-bold text-sm shadow-neon">Salvar Chaves de Pagamento</button>
+                    </form>
+                </div>
+            `;
+        }
+
+        function saveVisualEditor(e) {
+            e.preventDefault();
+            AppData.siteLayout.heroTitle = document.getElementById('edit-hero-title').value;
+            AppData.siteLayout.heroSubtitle = document.getElementById('edit-hero-subtitle').value;
+            AppData.siteLayout.heroBanner = document.getElementById('edit-hero-banner').value;
+            AppData.siteLayout.gridColumns = document.getElementById('edit-grid-cols').value;
+
+            saveAppData();
+            showToast('Alterações visuais salvas e publicadas com sucesso!', 'success');
+            router.navigate('home');
+        }
+
+        function addNewCategory() {
+            const catName = prompt('Nome da nova categoria:');
+            if (catName && !AppData.categories.includes(catName)) {
+                AppData.categories.push(catName);
+                saveAppData();
+                showToast(`Categoria ${catName} adicionada!`, 'success');
+                switchAdminTab('categories');
+            }
+        }
+
+        function removeCategory(catName) {
+            if (confirm(`Deseja remover a categoria ${catName}?`)) {
+                AppData.categories = AppData.categories.filter(c => c !== catName);
+                saveAppData();
+                showToast('Categoria removida.', 'info');
+                switchAdminTab('categories');
+            }
+        }
+
+        function openAddWallpaperModal() {
+            const html = `
+                <div class="glass-panel p-8 rounded-3xl max-w-lg w-full relative border border-purple-500/50">
+                    <button onclick="closeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 class="text-xl font-bold text-white mb-4">Adicionar Novo Wallpaper</h3>
+                    <form onsubmit="handleCreateWallpaper(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Título</label>
+                            <input type="text" id="new-wp-title" required class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Categoria</label>
+                                <select id="new-wp-cat" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                                    ${AppData.categories.map(c => `<option value="${c}">${c}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Preço (R$) [0 = Grátis]</label>
+                                <input type="number" step="0.1" id="new-wp-price" value="0" required class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">URL da Imagem / Capa</label>
+                            <input type="text" id="new-wp-img" required placeholder="https://..." class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Descrição</label>
+                            <textarea id="new-wp-desc" rows="2" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white"></textarea>
+                        </div>
+                        <button type="submit" class="w-full btn-neon py-3 rounded-xl text-white font-bold text-sm">Publicar Wallpaper</button>
+                    </form>
+                </div>
+            `;
+            openModalContent(html);
+        }
+
+        function handleCreateWallpaper(e) {
+            e.preventDefault();
+            const newWp = {
+                id: 'wp-' + Date.now(),
+                title: document.getElementById('new-wp-title').value,
+                category: document.getElementById('new-wp-cat').value,
+                type: 'static',
+                price: parseFloat(document.getElementById('new-wp-price').value),
+                resolution: '4K Ultra HD (3840x2160)',
+                downloads: 0,
+                rating: 5.0,
+                image: document.getElementById('new-wp-img').value,
+                description: document.getElementById('new-wp-desc').value,
+                featured: true,
+                badge: 'Novo'
+            };
+            AppData.wallpapers.unshift(newWp);
+            saveAppData();
+            closeModal();
+            showToast('Wallpaper publicado com sucesso!', 'success');
+            router.navigate('admin');
+        }
+
+        function deleteWallpaper(id) {
+            if (confirm('Tem certeza que deseja excluir este wallpaper?')) {
+                AppData.wallpapers = AppData.wallpapers.filter(w => w.id !== id);
+                saveAppData();
+                showToast('Wallpaper excluído.', 'info');
+                router.navigate('admin');
+            }
+        }
+
+        function openEditWallpaperModal(id) {
+            const wp = AppData.wallpapers.find(w => w.id === id);
+            if (!wp) return;
+            const html = `
+                <div class="glass-panel p-8 rounded-3xl max-w-lg w-full relative border border-purple-500/50">
+                    <button onclick="closeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 class="text-xl font-bold text-white mb-4">Editar Wallpaper</h3>
+                    <form onsubmit="handleEditWallpaper(event, '${id}')" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Título</label>
+                            <input type="text" id="edit-wp-title" value="${wp.title}" required class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Preço (R$)</label>
+                                <input type="number" step="0.1" id="edit-wp-price" value="${wp.price}" required class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Categoria</label>
+                                <select id="edit-wp-cat" class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                                    ${AppData.categories.map(c => `<option value="${c}" ${wp.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">URL da Imagem</label>
+                            <input type="text" id="edit-wp-img" value="${wp.image}" required class="w-full bg-black/60 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white">
+                        </div>
+                        <button type="submit" class="w-full btn-neon py-3 rounded-xl text-white font-bold text-sm">Salvar Alterações</button>
+                    </form>
+                </div>
+            `;
+            openModalContent(html);
+        }
+
+        function handleEditWallpaper(e, id) {
+            e.preventDefault();
+            const wp = AppData.wallpapers.find(w => w.id === id);
+            if (wp) {
+                wp.title = document.getElementById('edit-wp-title').value;
+                wp.price = parseFloat(document.getElementById('edit-wp-price').value);
+                wp.category = document.getElementById('edit-wp-cat').value;
+                wp.image = document.getElementById('edit-wp-img').value;
+                saveAppData();
+                closeModal();
+                showToast('Wallpaper atualizado com sucesso!', 'success');
+                router.navigate('admin');
+            }
+        }
+
+        function attachDynamicListeners() {
+            // Any dynamic bindings needed on render
+        }
+
+        // Initialize application on window load
+        window.onload = function() {
+            renderApp();
+        };
+    </script>
+</body>
+</html>
